@@ -13,15 +13,17 @@ from sklearn.cluster import KMeans
 import numpy as np
 import pandas as pd
 
-data=pd.read_csv("C:/Users/djiko/Documents/ESME/Ingé2/Projet Clustering/ISCXURL2016/FinalDataset/All.csv")
+data=pd.read_csv("C:/Users/djiko/Documents/ESME/Ingé2/Projet Clustering/ISCXURL2016/FinalDataset/All_BestFirst.csv")
 
 # Replacing infinite with nan
 data.replace([np.inf, -np.inf], inplace=True)
 # Dropping all the rows with nan values
 data.dropna(inplace=True)
 
-X=data.drop("URL_Type_obf_Type",axis=1)
-y=data["URL_Type_obf_Type"]
+#X=data.drop("URL_Type_obf_Type",axis=1)
+#y=data["URL_Type_obf_Type"]
+X=data.drop("class",axis=1)
+y=data["class"]
 
 
 #Load Data
