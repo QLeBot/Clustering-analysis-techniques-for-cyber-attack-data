@@ -54,7 +54,7 @@ articles=np.transpose(articles)
 titles=df.columns.drop('words')"""
 
 
-pca = PCA(n_components=10)
+pca = PCA(n_components=8)
 kmeans=KMeans(n_clusters=nb_type_url)
 pipeline=make_pipeline(pca, kmeans)
 
@@ -108,12 +108,12 @@ ax.set_ylim([-0.2, 0.3])
 #ax.set_ylim([-0.1, 0.05])
 for i, (x, y) in enumerate(zip(pca.components_[0, :], pca.components_[1, :])):
  # plot line between origin and point (x, y)
- #ax.plot([0, x], [0, y], color='k')
+ ax.plot([0, x], [0, y], color='k')
  #plot point
  ax.plot(x,y, color='k')
  # display the label of the point
 
- ax.text(x, y, X.columns[i], fontsize='14')
+#ax.text(x, y, X.columns[i], fontsize='14')
 # ax.text(x, y, i, fontsize='14')
  
 # =============================================================================

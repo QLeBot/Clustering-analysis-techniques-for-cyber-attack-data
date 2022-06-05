@@ -13,7 +13,7 @@ import pandas as pd
 import numpy as np
 
 
-df=pd.read_csv("C:/Users/djiko/Documents/ESME/Ingé2/Projet Clustering/ISCXURL2016/FinalDataset/All_InfoGain.csv")
+df=pd.read_csv("C:/Users/djiko/Documents/ESME/Ingé2/Projet Clustering/ISCXURL2016/FinalDataset/All_BestFirst.csv")
 
 df.replace([np.inf, -np.inf], inplace=True)
 # Dropping all the rows with nan values
