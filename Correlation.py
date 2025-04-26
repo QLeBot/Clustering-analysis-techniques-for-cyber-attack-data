@@ -38,6 +38,9 @@ def main():
         # Load and preprocess data
         df = load_data(DATASET_PATH)
         
+        # Drop non-numeric columns
+        numeric_df = df.select_dtypes(include=[np.number])
+        
         # Define feature groups for correlation analysis
         feature_groups = {
             "Download_Features": [
@@ -66,7 +69,12 @@ def main():
         
         # Plot correlation heatmaps for each feature group
         for group_name, features in feature_groups.items():
-            plot_correlation_heatmap(df, features, f"{group_name} Correlation")
+            # Filter features to only include those that exist in numeric_df
+            valid_features = [f for f in features if f in numeric_df.columns]
+            if valid_features:
+                plot_correlation_heatmap(numeric_df, valid_features, f"{group_name} Correlation")
+            else:
+                logger.warning(f"No valid numeric features found for group: {group_name}")
             
     except Exception as e:
         logger.error(f"Error in correlation analysis: {str(e)}")
@@ -74,63 +82,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-
-
-
-
-df=pd.read_csv("data/raw/All.csv")
-
-"""df.replace([np.inf, -np.inf], inplace=True)
-# Dropping all the rows with nan values
-df.dropna(inplace=True)"""
-
-X=df.drop("URL_Type_obf_Type",axis=1)
-y=df["URL_Type_obf_Type"]
-
-
-#Using Pearson Correlation
-plt.figure(figsize=(100,100))
-cor = df.corr()
-sns.heatmap(cor, annot=True, cmap=plt.cm.Reds)
-plt.show()
-
-
-
-
-
-df=pd.read_csv("data/raw/All.csv")
-
-"""df.replace([np.inf, -np.inf], inplace=True)
-# Dropping all the rows with nan values
-df.dropna(inplace=True)
-
-X=df.drop("URL_Type_obf_Type",axis=1)
-y=df["URL_Type_obf_Type"]"""
-
-#df_test = df[["dld_url","dld_path","dld_getArg","charcompvowels","charcompace","Extension_DigitCount","URL_DigitCount"]]
-#df_test = df_test.append(df[["Query_DigitCount","ArgLen","urlLen","argDomanRatio","pathLength","subDirLen"]])
-
-df_test = df[["dld_url","dld_path","dld_getArg","charcompvowels","charcompace","Extension_DigitCount","URL_DigitCount","Query_DigitCount","ArgLen","urlLen","argDomanRatio","pathLength","subDirLen","URL_Letter_Count","LongestPathTokenLength","pathDomainRatio","Querylength","ldl_url","ldl_getArg"]]
-#Using Pearson Correlation
-
-plt.figure(figsize=(10,10))
-cor = df_test.corr()
-sns.heatmap(cor, annot=True, cmap=plt.cm.Reds)
-plt.show()
-
-
-df_test2=df[["SymbolCount_URL","SymbolCount_Afterpath","SymbolCount_FileName","SymbolCount_Extension","delimeter_Count","URLQueries_variable"]]
-plt.figure(figsize=(10,10))
-cor = df_test2.corr()
-sns.heatmap(cor, annot=True, cmap=plt.cm.Reds)
-plt.show()
-
-
-df_group3=df[["NumberRate_FileName","SymbolCount_Directoryname","NumberofDotsinURL","Entropy_DirectoryName","SymbolCount_Domain","domain_token_count","sub-Directory_LongestWordLength","NumberRate_DirectoryName","Entropy_Filename","Path_LongestWordLength","Entropy_Extension","Directory_LetterCount","domainlength"]]
-plt.figure(figsize=(10,10))
-cor = df_group3.corr()
-sns.heatmap(cor, annot=True, cmap=plt.cm.Reds)
-plt.show()
-
-

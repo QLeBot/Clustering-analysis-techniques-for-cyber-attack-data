@@ -31,7 +31,7 @@ X_scaled = std_scale.transform(X)
 
 pca = decomposition.PCA(n_components=7)
 pca.fit(X_scaled)
-print(type(pca.components_))
+#print(type(pca.components_))
 
 #fig = plt.figure(figsize=(6, 5))
 fig = plt.figure(figsize=(40, 40))
