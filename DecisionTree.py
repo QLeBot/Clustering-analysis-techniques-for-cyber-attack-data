@@ -1,10 +1,3 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Thu Apr 21 09:58:35 2022
-
-@author: djiko
-"""
-
 from sklearn.decomposition import PCA
 from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import StandardScaler
@@ -13,7 +6,7 @@ import pandas as pd
 import numpy as np
 
 
-df=pd.read_csv("C:/Users/djiko/Documents/ESME/Ingé2/Projet Clustering/ISCXURL2016/FinalDataset/All_BestFirst.csv")
+df=pd.read_csv("data/raw/All_BestFirst.csv")
 
 df.replace([np.inf, -np.inf], inplace=True)
 # Dropping all the rows with nan values

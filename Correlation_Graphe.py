@@ -1,10 +1,3 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Sat Apr 30 16:52:53 2022
-
-@author: djiko
-"""
-
 from sklearn.decomposition import PCA
 from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import StandardScaler
@@ -14,7 +7,7 @@ import numpy as np
 
 
 
-df=pd.read_csv("C:/Users/djiko/Documents/ESME/Ingé2/Projet Clustering/ISCXURL2016/FinalDataset/All.csv")
+df=pd.read_csv("data/raw/All.csv")
 
 df = df.replace('Defacement', 1)
 df = df.replace('begign', 0)

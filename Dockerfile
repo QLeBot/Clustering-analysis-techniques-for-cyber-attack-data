@@ -1,7 +1,29 @@
-FROM continuumio/miniconda3:4.10.3p1
+# Use Python 3.9 as base image
+FROM python:3.9-slim
 
-RUN conda install -c conda-forge\
-    numpy==1.21.2\
-    pandas==1.4.1\
-    matplotlib==3.5.1\
-    scikit-learn==1.0.2 -y
+# Set working directory
+WORKDIR /app
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy requirements file
+COPY requirements.txt .
+
+# Install Python dependencies
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy project files
+COPY . .
+
+# Create necessary directories
+RUN mkdir -p data/raw data/processed results
+
+# Set environment variables
+ENV PYTHONPATH=/app
+ENV PYTHONUNBUFFERED=1
+
+# Command to run when container starts
+CMD ["python", "DiscoverDatabase.py"]

@@ -1,19 +1,10 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Sun May  8 15:43:24 2022
-
-@author: djiko
-"""
-
-#Importing required modules
- 
 from sklearn.datasets import load_digits
 from sklearn.decomposition import PCA
 from sklearn.cluster import KMeans
 import numpy as np
 import pandas as pd
 
-data=pd.read_csv("C:/Users/djiko/Documents/ESME/Ingé2/Projet Clustering/ISCXURL2016/FinalDataset/All_BestFirst.csv")
+data=pd.read_csv("data/raw/All_BestFirst.csv")
 
 # Replacing infinite with nan
 data.replace([np.inf, -np.inf], inplace=True)

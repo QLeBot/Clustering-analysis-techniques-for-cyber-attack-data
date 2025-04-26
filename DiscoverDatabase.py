@@ -1,146 +1,129 @@
+"""
+Database discovery and analysis module.
+"""
 from sklearn.decomposition import PCA
 from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import StandardScaler
-import  matplotlib.pyplot as plt
+from sklearn.cluster import KMeans
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import accuracy_score
+import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
+import logging
 
+from settings import (
+    DATASET_PATH, PCA_COMPONENTS, N_CLUSTERS, 
+    TEST_SIZE, RANDOM_STATE, PLOT_FIGSIZE
+)
+from utils import load_data, prepare_features_target, save_plot
 
+logger = logging.getLogger(__name__)
 
-df=pd.read_csv("C:/Users/djiko/Documents/ESME/Ingé2/Projet Clustering/ISCXURL2016/FinalDataset/All.csv")
+def analyze_url_types(df: pd.DataFrame) -> None:
+    """Analyze and log the number of unique URL types."""
+    nb_type_url = len(df["URL_Type_obf_Type"].unique())
+    logger.info(f"Number of unique URL types: {nb_type_url}")
+    return nb_type_url
 
-# =============================================================================
-# Nombre de type URL différente
-# =============================================================================
-nb_type_url = len(df["URL_Type_obf_Type"].unique())
-print(nb_type_url)
+def perform_pca_analysis(X: pd.DataFrame) -> None:
+    """Perform PCA analysis and plot explained variance."""
+    try:
+        scaler = StandardScaler()
+        pca = PCA()
+        pipeline = make_pipeline(scaler, pca)
+        pipeline.fit(X)
 
-# =============================================================================
-# PCA components
-# =============================================================================
+        # Plot explained variance
+        plt.figure(figsize=PLOT_FIGSIZE)
+        plt.bar(range(pca.n_components_), pca.explained_variance_)
+        plt.xlabel("PCA Components")
+        plt.ylabel("Explained Variance")
+        plt.title("PCA Explained Variance")
+        save_plot(plt.gcf(), "pca_explained_variance")
+        plt.close()
+        
+        logger.info(f"Total explained variance ratio: {sum(pca.explained_variance_ratio_):.2f}")
+    except Exception as e:
+        logger.error(f"Error in PCA analysis: {str(e)}")
+        raise
 
-# Replacing infinite with nan
-df.replace([np.inf, -np.inf], inplace=True)
-# Dropping all the rows with nan values
-df.dropna(inplace=True)
+def perform_clustering(X: pd.DataFrame, y: pd.Series, n_clusters: int) -> None:
+    """Perform clustering analysis."""
+    try:
+        pca = PCA(n_components=PCA_COMPONENTS)
+        kmeans = KMeans(n_clusters=n_clusters, random_state=RANDOM_STATE)
+        pipeline = make_pipeline(pca, kmeans)
+        
+        # Fit and predict
+        pipeline.fit(X)
+        cluster_labels = pipeline.predict(X)
+        
+        # Create and display cluster analysis
+        df_cluster = pd.DataFrame({
+            'cluster_labels': cluster_labels,
+            'url_type': y
+        })
+        
+        # Print cluster distribution
+        logger.info("\nCluster Distribution:")
+        print(df_cluster.sort_values('cluster_labels'))
+        
+        # Create and display confusion matrix
+        ct = pd.crosstab(df_cluster['cluster_labels'], df_cluster['url_type'])
+        logger.info("\nCluster vs URL Type Crosstab:")
+        print(ct)
+        
+    except Exception as e:
+        logger.error(f"Error in clustering analysis: {str(e)}")
+        raise
 
-X=df.drop("URL_Type_obf_Type",axis=1)
-y=df["URL_Type_obf_Type"]
+def train_decision_tree(X: pd.DataFrame, y: pd.Series) -> float:
+    """Train and evaluate a decision tree classifier."""
+    try:
+        # Split data
+        X_train, X_test, y_train, y_test = train_test_split(
+            X, y, test_size=TEST_SIZE, random_state=RANDOM_STATE
+        )
+        
+        # Train model
+        dt = DecisionTreeClassifier(max_depth=2, random_state=RANDOM_STATE)
+        dt.fit(X_train, y_train)
+        
+        # Evaluate
+        y_pred = dt.predict(X_test)
+        accuracy = accuracy_score(y_test, y_pred)
+        logger.info(f"Decision Tree Accuracy: {accuracy:.2f}")
+        
+        return accuracy
+    except Exception as e:
+        logger.error(f"Error in decision tree training: {str(e)}")
+        raise
 
-#print(df[df.isnull().any(axis=1)])
+def main():
+    """Main function to run database discovery and analysis."""
+    try:
+        # Load and preprocess data
+        df = load_data(DATASET_PATH)
+        X, y = prepare_features_target(df)
+        
+        # Analyze URL types
+        n_clusters = analyze_url_types(df)
+        
+        # Perform PCA analysis
+        perform_pca_analysis(X)
+        
+        # Perform clustering
+        perform_clustering(X, y, n_clusters)
+        
+        # Train decision tree
+        train_decision_tree(X, y)
+        
+    except Exception as e:
+        logger.error(f"Error in database discovery: {str(e)}")
+        raise
 
-scaler = StandardScaler()
-pca=PCA()
-
-pipeline=make_pipeline(scaler,pca)
-pipeline.fit(X)
-
-components=range(pca.n_components_)
-
-plt.bar(components, pca.explained_variance_)
-plt.xlabel("PCA components")
-plt.ylabel("Variance")
-
-# =============================================================================
-# Cluster
-# =============================================================================
-
-
-from sklearn.cluster import KMeans
-import numpy as np
-
-"""articles=df.drop('words', axis=1)
-articles=np.transpose(articles)
-titles=df.columns.drop('words')"""
-
-
-pca = PCA(n_components=8)
-kmeans=KMeans(n_clusters=nb_type_url)
-pipeline=make_pipeline(pca, kmeans)
-
-pipeline.fit(X)
-
-cluster_labels = pipeline.predict(X)
-df_cluster=pd.DataFrame({'cluster labels':cluster_labels,'article titles': y})
-
-
-print(df_cluster.sort_values('cluster labels'))
-
-# =============================================================================
-# Performance
-# =============================================================================
-
-model = KMeans(n_clusters=nb_type_url)
-
-#cluster_labels=model.fit_predict(X)
-
-pca = PCA(n_components=6)
-kmeans=KMeans(n_clusters=nb_type_url)
-pipeline=make_pipeline(pca, kmeans)
-
-pipeline.fit(X)
-
-cluster_labels = pipeline.predict(X)
-
-df_ct =pd.DataFrame({'cluster labels':cluster_labels,'type_url':y})
-
-ct=pd.crosstab(df_ct['cluster labels'],df_ct['type_url'])
-
-print(ct)
-
-# =============================================================================
-# Corrélation
-# =============================================================================
-from sklearn import decomposition, preprocessing
-std_scale = preprocessing.StandardScaler().fit(X)
-X_scaled = std_scale.transform(X)
-
-pca = decomposition.PCA(n_components=7)
-pca.fit(X_scaled)
-print(type(pca.components_))
-
-fig = plt.figure(figsize=(6, 5))
-#fig = plt.figure(figsize=(40, 40))
-ax = fig.add_subplot(1, 1, 1)
-ax.set_xlim([-0.2, 0.3])
-ax.set_ylim([-0.2, 0.3])
-#♣ax.set_xlim([0.15, 0.25])
-#ax.set_ylim([-0.1, 0.05])
-for i, (x, y) in enumerate(zip(pca.components_[0, :], pca.components_[1, :])):
- # plot line between origin and point (x, y)
- ax.plot([0, x], [0, y], color='k')
- #plot point
- ax.plot(x,y, color='k')
- # display the label of the point
-
-#ax.text(x, y, X.columns[i], fontsize='14')
-# ax.text(x, y, i, fontsize='14')
- 
-# =============================================================================
-# Classification Tree 
-# =============================================================================
- 
-from sklearn.tree import DecisionTreeClassifier 
-# Import train_test_split
-from sklearn.model_selection import train_test_split 
-# Import accuracy_score
-from sklearn.metrics import accuracy_score
-
-"""y = y.replace('Defacement', 1)
-y = y.replace('begign', 0)
-y = y.replace('malware', 2)
-y = y.replace('pishing', 3)
-y = y.replace('spam', 4)"""
-
-# Split dataset into 80% train, 20% test
-X_train, X_test, y_train, y_test= train_test_split(X, y,test_size=0.2, random_state=1)
-# Instantiate dt
-dt = DecisionTreeClassifier(max_depth=2, random_state=1)
-
-#Fit dt to the training set 
-dt.fit(X_train,y_train)
-# Predict test set labels 
-y_pred = dt.predict(X_test)
-# Evaluate test-set accuracy 
-accuracy_score(y_test, y_pred)
+if __name__ == "__main__":
+    main()
  
